@@ -123,17 +123,17 @@
 
   programs.hyprlock = {
     enable = true;
-    backgrounds = [{path = "/home/ewan/Wallpapers/frieren2.png";}];
-    input-fields = [{ 
-        size.width = 600;
-        font_color = "rgb(205, 214, 244)";
-        inner_color = "rgb(30, 30, 30)";
-        outer_color = "rgb(17, 17, 27)";
-      }
-    ];
-    labels = [ 
-    # No label
-    ];
+    settings = {
+
+        background = [{path = "/home/ewan/Wallpapers/frieren2.png";}];
+        input-field = [{ 
+            size.width = 600;
+            font_color = "rgb(205, 214, 244)";
+            inner_color = "rgb(30, 30, 30)";
+            outer_color = "rgb(17, 17, 27)";
+          }
+        ];
+    };
   };
 
   # Home Manager can also manage your environment variables through

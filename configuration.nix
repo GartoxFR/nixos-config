@@ -6,7 +6,8 @@
 
 {
   imports =
-    [ # Include the results of the hardware scan.
+    [
+      # Include the results of the hardware scan.
       ./hardware-configuration.nix
       inputs.home-manager.nixosModules.default
     ];
@@ -15,6 +16,9 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
   boot.supportedFilesystems = [ "ntfs" ];
+
+  # Kernel
+  boot.kernelPackages = pkgs.linuxPackages_latest;
 
   nix.gc = {
     automatic = false;
@@ -35,11 +39,11 @@
   networking.networkmanager.enable = true;
 
   # Setup for port forwarding with raspberry pi
-  # boot.kernel.sysctl = {
-  #   "net.ipv4.conf.all.forwarding" = true;
-  # };
-  # networking.nat.enable = true;
-  # networking.firewall.extraCommands = "iptables -t nat -A POSTROUTING -o enp7s0 -j MASQUERADE";
+  boot.kernel.sysctl = {
+    "net.ipv4.conf.all.forwarding" = true;
+  };
+  networking.nat.enable = true;
+  networking.firewall.extraCommands = "iptables -t nat -A POSTROUTING -o enp7s0 -j MASQUERADE";
 
   # Set your time zone.
   time.timeZone = "Europe/Paris";
@@ -60,10 +64,11 @@
   };
 
   i18n.inputMethod = {
-      enabled = "fcitx5";
-      fcitx5.addons = with pkgs; [
-          fcitx5-gtk
-      ];
+    enable = true;
+    type = "fcitx5";
+    fcitx5.addons = with pkgs; [
+      fcitx5-gtk
+    ];
   };
 
 
@@ -80,33 +85,34 @@
   programs.fish.enable = true;
 
   programs.direnv = {
-      enable = true;
-      silent = true;
+    enable = true;
+    silent = true;
   };
+
+  virtualisation.libvirtd.enable = true;
+  programs.virt-manager.enable = true;
 
 
   services.udisks2.enable = true;
 
   services = {
-      syncthing = {
-          enable = true;
-          dataDir = "/home/ewan/Documents/syncthing";    # Default folder for new synced folders
-          configDir = "/home/ewan/Documents/.config/syncthing";   # Folder for Syncthing's settings and keys         
-          user = "ewan";
-      };
+    syncthing = {
+      enable = true;
+      dataDir = "/home/ewan/Documents/syncthing"; # Default folder for new synced folders
+      configDir = "/home/ewan/Documents/.config/syncthing"; # Folder for Syncthing's settings and keys         
+      user = "ewan";
+    };
   };
 
-  services.flatpak.enable = true;
+  # services.flatpak.enable = true;
 
-  hardware.opengl = {
+  hardware.graphics = {
     enable = true;
-    driSupport = true;
-    driSupport32Bit = true;
   };
 
   hardware.opentabletdriver.enable = true;
 
-  services.xserver.videoDrivers = ["nvidia"];
+  services.xserver.videoDrivers = [ "nvidia" ];
 
 
   hardware.nvidia = {
@@ -134,20 +140,20 @@
     open = false;
 
     # Enable the Nvidia settings menu,
-	# accessible via `nvidia-settings`.
+    # accessible via `nvidia-settings`.
     nvidiaSettings = true;
 
     # Optionally, you may need to select the appropriate driver version for your specific GPU.
     package = config.boot.kernelPackages.nvidiaPackages.stable;
   };
   hardware.nvidia.prime = {
-  	# Make sure to use the correct Bus ID values for your system!
-  	intelBusId = "PCI:0:2:0";
-	nvidiaBusId = "PCI:1:0:0";
+    # Make sure to use the correct Bus ID values for your system!
+    intelBusId = "PCI:0:2:0";
+    nvidiaBusId = "PCI:1:0:0";
     offload = {
-	  enable = true;
+      enable = true;
       enableOffloadCmd = true;
-	};
+    };
   };
 
 
@@ -155,20 +161,20 @@
   users.users.ewan = {
     isNormalUser = true;
     description = "ewan";
-    extraGroups = [ "docker" "networkmanager" "wheel" "storage" "mpd" "dialout" ];
-    packages = with pkgs; [];
+    extraGroups = [ "docker" "networkmanager" "wheel" "storage" "mpd" "dialout" "libvirtd"];
+    packages = [ ];
   };
 
   home-manager = {
     extraSpecialArgs = { inherit inputs; };
     users = {
-      ewan.imports = [./home.nix inputs.hyprlock.homeManagerModules.default ];
+      ewan.imports = [ ./home.nix ];
     };
   };
 
   security.sudo.wheelNeedsPassword = false;
   security.pam.services = {
-    hyprlock = {};
+    hyprlock = { };
   };
 
   virtualisation.docker.enable = true;
@@ -204,6 +210,7 @@
     ninja
     firefox
     git
+    gitoxide
     rofi-wayland
     neovim
     swww
@@ -211,9 +218,12 @@
     networkmanagerapplet
     sshfs
 
+    nil
+    nixpkgs-fmt
     dunst
 
     bashmount
+    obs-studio
 
     wl-clipboard
 
@@ -227,14 +237,14 @@
 
     catppuccin-qt5ct
     (catppuccin-gtk.override {
-        accents = [ "lavender" ]; # You can specify multiple accents here to output multiple themes
-        size = "compact";
-        tweaks = [ ]; # You can also specify multiple tweaks here
-        variant = "mocha";
-      })
+      accents = [ "lavender" ]; # You can specify multiple accents here to output multiple themes
+      size = "compact";
+      tweaks = [ ]; # You can also specify multiple tweaks here
+      variant = "mocha";
+    })
     dconf
     glib
-    
+
     nwg-look
 
     nicotine-plus
@@ -243,7 +253,6 @@
 
     clang-tools_17
 
-    inputs.hyprlock.packages.${pkgs.system}.hyprlock
     inputs.hypridle.packages.${pkgs.system}.hypridle
 
     python3
@@ -264,13 +273,19 @@
 
     ffmpeg-full
 
-    # android-studio
-
     prismlauncher
 
+    kicad
     zathura
+    webcord
     zip
     unzip
+
+    signal-desktop
+
+    xdg-desktop-portal
+
+    rustup
   ];
   programs.java = { enable = true; package = pkgs.openjdk17; };
   fonts.packages = with pkgs; [
@@ -279,10 +294,9 @@
 
   xdg.portal = {
     enable = true;
-    # extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
+    wlr.enable = true;
   };
 
-  sound.enable = true;
   security.rtkit.enable = true;
   services.pipewire = {
     enable = true;
@@ -291,7 +305,7 @@
     pulse.enable = true;
     jack.enable = true;
   };
-  hardware.pulseaudio.enable = false;
+  # hardware.pulseaudio.enable = false;
 
   services.mpd = {
     user = "ewan";
@@ -309,7 +323,7 @@
         format          "44100:16:1"     
       }                            
     '';
-  
+
     # Optional:
     startWhenNeeded = true; # systemd feature: only start MPD service upon connection to its socket
   };
@@ -333,7 +347,7 @@
   # services.openssh.enable = true;
 
   # Open ports in the firewall.
-  # networking.firewall.allowedTCPPorts = [ ... ];
+  networking.firewall.allowedTCPPorts = [ 4903 ];
   # networking.firewall.allowedUDPPorts = [ ... ];
   # Or disable the firewall altogether.
   # networking.firewall.enable = false;
@@ -346,7 +360,8 @@
   # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
   system.stateVersion = "23.11"; # Did you read the comment?
 
+  nix.settings.trusted-users = [ "root" "ewan" ];
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
-  nix.settings.substituters = ["https://cache.nixos.org/"];
+  nix.settings.substituters = [ "https://cache.nixos.org/" ];
 }
 
