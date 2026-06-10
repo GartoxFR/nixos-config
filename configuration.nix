@@ -28,7 +28,7 @@
 
   nix.registry.nixpkgs.flake = inputs.nixpkgs;
 
-  networking.hostName = "nixos"; # Define your hostname.
+  networking.hostName = "laptop"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
 
   # Configure network proxy if necessary
@@ -39,11 +39,11 @@
   networking.networkmanager.enable = true;
 
   # Setup for port forwarding with raspberry pi
-  boot.kernel.sysctl = {
-    "net.ipv4.conf.all.forwarding" = true;
-  };
-  networking.nat.enable = true;
-  networking.firewall.extraCommands = "iptables -t nat -A POSTROUTING -o enp7s0 -j MASQUERADE";
+  # boot.kernel.sysctl = {
+  #   "net.ipv4.conf.all.forwarding" = true;
+  # };
+  # networking.nat.enable = true;
+  # networking.firewall.extraCommands = "iptables -t nat -A POSTROUTING -o enp7s0 -j MASQUERADE";
 
   # Set your time zone.
   time.timeZone = "Europe/Paris";
@@ -63,46 +63,25 @@
     LC_TIME = "fr_FR.UTF-8";
   };
 
-  i18n.inputMethod = {
-    enable = true;
-    type = "fcitx5";
-    fcitx5.addons = with pkgs; [
-      fcitx5-gtk
-    ];
-  };
-
-
-  programs.steam = {
-    enable = true;
-    remotePlay.openFirewall = true; # Open ports in the firewall for Steam Remote Play
-    dedicatedServer.openFirewall = true; # Open ports in the firewall for Source Dedicated Server
-  };
+  # programs.steam = {
+  #   enable = true;
+  #   remotePlay.openFirewall = true; # Open ports in the firewall for Steam Remote Play
+  #   dedicatedServer.openFirewall = true; # Open ports in the firewall for Source Dedicated Server
+  # };
 
   programs.fuse = {
     userAllowOther = true;
   };
 
-  programs.fish.enable = true;
-
-  programs.direnv = {
-    enable = true;
-    silent = true;
-  };
+  # programs.direnv = {
+  #   enable = true;
+  #   silent = true;
+  # };
 
   virtualisation.libvirtd.enable = true;
   programs.virt-manager.enable = true;
 
-
   services.udisks2.enable = true;
-
-  services = {
-    syncthing = {
-      enable = true;
-      dataDir = "/home/ewan/Documents/syncthing"; # Default folder for new synced folders
-      configDir = "/home/ewan/Documents/.config/syncthing"; # Folder for Syncthing's settings and keys         
-      user = "ewan";
-    };
-  };
 
   # services.flatpak.enable = true;
 
@@ -110,7 +89,7 @@
     enable = true;
   };
 
-  hardware.opentabletdriver.enable = true;
+  # hardware.opentabletdriver.enable = true;
 
   services.xserver.videoDrivers = [ "nvidia" ];
 
@@ -161,7 +140,7 @@
   users.users.ewan = {
     isNormalUser = true;
     description = "ewan";
-    extraGroups = [ "docker" "networkmanager" "wheel" "storage" "mpd" "dialout" "libvirtd"];
+    extraGroups = [ "docker" "networkmanager" "wheel" "storage" "dialout" "libvirtd"];
     packages = [ ];
   };
 
@@ -177,40 +156,22 @@
     hyprlock = { };
   };
 
-  virtualisation.docker.enable = true;
-
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
 
-  # List packages installed in system profile. To search, run:
-  # $ nix search wget
-  environment.variables = with pkgs; {
-    ARM_GCC_PATH = gcc-arm-embedded.outPath;
-    JAVA_HOME = pkgs.openjdk17.home;
-  };
   environment.systemPackages = with pkgs; [
-    alacritty
-    bottom
+    kitty
+    btop
     tmux
-    fish
-    fishPlugins.bass
-    starship
     fzf
     tree
-    gcc
-    gcc-arm-embedded
     ripgrep
     fd
     pulsemixer
     pulseaudio
-    jdk21
     pamixer
-    cmake
-    gnumake
-    ninja
     firefox
     git
-    gitoxide
     rofi-wayland
     neovim
     swww
@@ -223,73 +184,26 @@
     dunst
 
     bashmount
-    obs-studio
 
     wl-clipboard
 
-    osu-lazer-bin
-    opentabletdriver
-
-    (ncmpcpp.override { visualizerSupport = true; clockSupport = true; })
-    mpc-cli
-
-    qt5ct
-
-    catppuccin-qt5ct
-    (catppuccin-gtk.override {
-      accents = [ "lavender" ]; # You can specify multiple accents here to output multiple themes
-      size = "compact";
-      tweaks = [ ]; # You can also specify multiple tweaks here
-      variant = "mocha";
-    })
-    dconf
-    glib
-
-    nwg-look
-
-    nicotine-plus
-
-    cinnamon.nemo
-
-    clang-tools_17
-
-    inputs.hypridle.packages.${pkgs.system}.hypridle
-
-    python3
-    python311Packages.pip
-
-    nodejs
-
-    libreoffice
     entr
-    plantuml
-    sxiv
-    thunderbird
 
     xdg-utils
     xdg-user-dirs
 
     appimage-run
 
-    ffmpeg-full
 
-    prismlauncher
-
-    kicad
     zathura
-    webcord
     zip
     unzip
 
-    signal-desktop
-
-    xdg-desktop-portal
-
-    rustup
+    xdg-desktop-portal-hyprland
   ];
-  programs.java = { enable = true; package = pkgs.openjdk17; };
+
   fonts.packages = with pkgs; [
-    (nerdfonts.override { fonts = [ "JetBrainsMono" ]; })
+    (nerdfonts.iosevka-term)
   ];
 
   xdg.portal = {
@@ -307,32 +221,6 @@
   };
   # hardware.pulseaudio.enable = false;
 
-  services.mpd = {
-    user = "ewan";
-    enable = true;
-    musicDirectory = "/home/ewan/Music";
-    extraConfig = ''
-      audio_output {
-        type "pipewire"
-        name "Pipewire"
-      }
-      audio_output {                          
-        type            "fifo"           
-        name            "My FIFO"        
-        path            "/home/ewan/.config/mpd/fifo"  
-        format          "44100:16:1"     
-      }                            
-    '';
-
-    # Optional:
-    startWhenNeeded = true; # systemd feature: only start MPD service upon connection to its socket
-  };
-
-  systemd.services.mpd.environment = {
-    XDG_RUNTIME_DIR = "/run/user/1000";
-  };
-
-
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
   # programs.mtr.enable = true;
@@ -347,7 +235,7 @@
   # services.openssh.enable = true;
 
   # Open ports in the firewall.
-  networking.firewall.allowedTCPPorts = [ 4903 ];
+  # networking.firewall.allowedTCPPorts = [ 4903 ];
   # networking.firewall.allowedUDPPorts = [ ... ];
   # Or disable the firewall altogether.
   # networking.firewall.enable = false;
