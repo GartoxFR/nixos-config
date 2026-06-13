@@ -15,7 +15,27 @@
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
-  boot.supportedFilesystems = [ "ntfs" ];
+  boot.supportedFilesystems = [ "ntfs" "nfs" ];
+
+  services.rpcbind.enable = true;
+
+  services.blueman.enable = true;
+
+  systemd.mounts = [{
+    type = "nfs";
+    mountConfig = {
+      Options = "noatime";
+    };
+    what = "192.168.204.201:/mnt/pve/hdd";
+    where = "/mnt/hdd";
+  }];
+  systemd.automounts = [{
+      wantedBy = [ "multi-user.target" ];
+      automountConfig = {
+          TimeoutIdleSec = "600";
+      };
+      where = "/mnt/hdd";
+  }];
 
   # Kernel
   boot.kernelPackages = pkgs.linuxPackages_latest;
@@ -37,6 +57,8 @@
 
   # Enable networking
   networking.networkmanager.enable = true;
+  networking.wireguard.enable = true;
+  networking.firewall.checkReversePath = false;
 
   # Setup for port forwarding with raspberry pi
   # boot.kernel.sysctl = {
@@ -138,17 +160,20 @@
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.ewan = {
+    uid = 1000;
+    group = "ewan";
     isNormalUser = true;
     description = "ewan";
     extraGroups = [ "docker" "networkmanager" "wheel" "storage" "dialout" "libvirtd"];
     packages = [ ];
   };
+  users.groups.ewan.gid = 1000;
 
   home-manager = {
-    extraSpecialArgs = { inherit inputs; };
-    users = {
-      ewan.imports = [ ./home.nix ];
-    };
+   extraSpecialArgs = { inherit inputs; };
+   users = {
+     ewan.imports = [ ./home.nix ];
+   };
   };
 
   security.sudo.wheelNeedsPassword = false;
@@ -173,9 +198,9 @@
     pamixer
     firefox
     git
-    rofi-wayland
+    rofi
     neovim
-    swww
+    awww
     wget
     networkmanagerapplet
     sshfs
@@ -201,11 +226,15 @@
     unzip
 
     xdg-desktop-portal-hyprland
+
+    gcc
+    luajitPackages.tree-sitter-cli
+    devenv
   ];
 
-  fonts.packages = with pkgs; [
-    (nerdfonts.iosevka-term)
-  ];
+ fonts.packages = with pkgs; [
+   (nerd-fonts.iosevka-term)
+ ];
 
   xdg.portal = {
     enable = true;
