@@ -10,14 +10,19 @@
   };
 
   outputs = { self, nixpkgs, ... }@ inputs: {
-    nixosConfigurations.hyprland = nixpkgs.lib.nixosSystem {
+    nixosConfigurations.laptop = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
       specialArgs = { inherit inputs; };
       modules = [ 
-        ./configuration.nix 
-        ./hyprland.nix
-        inputs.home-manager.nixosModules.default 
+        ./hosts/laptop
       ];
     };
+    # nixosConfigurations.gitea-runner = nixpkgs.lib.nixosSystem {
+    #   system = "x86_64-linux";
+    #   specialArgs = { inherit inputs; };
+    #   modules = [ 
+    #     ./servers/gitea-runner.nix 
+    #   ];
+    # };
   };
 }
